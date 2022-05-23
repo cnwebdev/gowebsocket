@@ -4,14 +4,18 @@ import (
 	"net/http"
 	"websocket/ws/internal/handlers"
 
-	"github.com/bmizerany/pat"
+	"github.com/gorilla/mux"
 )
 
 func routes() http.Handler {
-	mux := pat.New()
+	mux := mux.NewRouter()
 
-	mux.Get("/", http.HandlerFunc(handlers.Home))
-	mux.Get("/ws", http.HandlerFunc(handlers.WsEndpoint))
+	fileServer := http.FileServer(http.Dir("assets"))
+	mux.PathPrefix("/assets").Handler(http.StripPrefix("/assets", fileServer))
+	// http.Handle("/html/css/*", http.StripPrefix("/html/css", fileServer))
+
+	mux.HandleFunc("/", handlers.Home)
+	mux.HandleFunc("ws", handlers.WsEndpoint)
 
 	return mux
 }
